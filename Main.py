@@ -52,13 +52,10 @@ def read_data():
             node = nodes[node_name]
             for temp_node in node.adj_vertices.keys():
                 if temp_node not in node.all_adj_vertices and temp_node != node.numb:
-                    print(str(temp_node) + " " + str(node.numb))
                     node.all_adj_vertices.extend(temp_node)
-            print("____________")
             for temp_node_name in node.adj_vertices.keys():
                 temp_node = nodes[temp_node_name]
                 if node_name not in temp_node.all_adj_vertices and temp_node_name != node.numb:
-                    print(str(temp_node_name) + " " + str(node.numb))
                     temp_node.all_adj_vertices.append(node_name)
     return nodes
 

@@ -39,25 +39,48 @@ class Node:
             self.adj_vertices[other_node_name] = [char]
 
 
-def get_start_coord(x_coord, y_coord, radius):
+def get_start_coord(node, radius):
     inc_coef = 1.2
-    if x_coord == 0:
-        if y_coord <= 0:
-            return 0.0, float(y_coord - inc_coef), "below"
+    if node.numb in node.adj_vertices.keys():
+        inc_coef = 0.2
+    if node.x == 0:
+        x = 0.0
+        if node.y <= 0:
+            y = float(node.y - inc_coef)
+            direct = "below"
         else:
-            return 0.0, float(y_coord + inc_coef), "above"
-    x = (float)((inc_coef + radius) * x_coord) / math.sqrt(x_coord * x_coord + y_coord * y_coord)
-    y = (float)(x) * (y_coord / x_coord)
-    if x_coord > 0:
-        return x, y, "right"
-    return x, y, "left"
+            y = float(node.y + inc_coef)
+            direct = "above"
+    else:
+        x = (float)((inc_coef + radius) * node.x) / math.sqrt(node.x * node.x + node.y * node.y)
+        y = (float)(x) * (node.y / node.x)
+        if node.x > 0:
+            direct = "right"
+        else:
+            direct = "left"
+
+    if node.numb in node.adj_vertices.keys():
+        delta = 1
+        if x <= 0 and y < 0:
+            x -= delta
+            y -= delta
+        elif x > 0 >= y:
+            x += delta
+            y -= delta
+        elif x < 0 <= y:
+            y += delta
+            x -= delta
+        else:
+            y += delta
+            x += delta
+    return x, y, direct
 
 
-def draw_start_node(name_node, x_coord, y_coord, radius):
-    start_x, start_y, napr = get_start_coord(x_coord, y_coord, radius)
+def draw_start_node(node, radius):
+    start_x, start_y, napr = get_start_coord(node, radius)
     node_format = "\\node (start) at (" + str(start_x) + "," + str(start_y) \
                   + "){};\n"
-    node_format += "\\draw[->, -latex] (start) --node[inner sep=0pt, swap] {}(" + name_node + ");\n"
+    node_format += "\\draw[->, -latex] (start) --node[inner sep=0pt, swap] {}(" + node.numb + ");\n"
     return node_format
 
 
@@ -82,11 +105,14 @@ def get_max_node(nodes, not_these_nodes):
     """
     max_node = None
     max_adj_count = 0
+    temp_node = None
     for node in nodes.keys():
         temp_node = nodes[node]
-        if node not in not_these_nodes and len(temp_node.all_adj_vertices) > max_adj_count:
+        if node not in not_these_nodes and len(temp_node.all_adj_vertices) >= max_adj_count:
             max_adj_count = len(temp_node.all_adj_vertices)
             max_node = temp_node
+    if max_node is None:
+        max_node = temp_node
     return max_node
 
 
@@ -101,52 +127,70 @@ def add_inform_node(node):
         ) + "{" + node.numb + "};\n"
 
 
-def add_adj_nodes(curr_angle, all_nodes, about_node, not_these_nodes):
+def do_one_iteration(temp_node, radius, curr_angle, center):
+    temp_y = radius * round(math.sin(math.radians(curr_angle)), 2) + center.y
+    temp_x = (-1) * round(radius * math.cos(math.radians(curr_angle)), 2) + center.x
+    temp_node.set_coordinates(temp_x, temp_y)
+    return add_inform_node(temp_node)
+
+
+def get_not_using_nodes(nodes_name, not_these):
+    i = 0
+    for node in nodes_name:
+        if node not in not_these:
+            i += 1
+    return i
+
+
+def add_adj_nodes(curr_angle, all_nodes, about_node):
     adj_nodes_list = about_node.all_adj_vertices
-    delta_angle = 360.0 / (len(adj_nodes_list) + 1)
-    radius = len(all_nodes) / 3
+    # delta_angle = 360.0 / (len(adj_nodes_list) + 1)
+    delta_angle = 360.0 / len(adj_nodes_list)
+    radius = 2.5
+    # radius = len(all_nodes)
     nodes_format = ""
 
-    for node_name in adj_nodes_list:
-        if node_name not in not_these_nodes:
-            temp_y = radius * round(math.sin(math.radians(curr_angle)), 2) + about_node.y
-            temp_x = (-1) * round(radius * math.cos(math.radians(curr_angle)), 2) + about_node.x
+    adj_nodes_count = len(adj_nodes_list)
+    i = 0
+    not_these = []
+    while i < adj_nodes_count:
+        max_node = get_max_node(all_nodes, not_these)
+        if max_node is None:
+            print('Nodes ended')
+            return
 
-            all_nodes[node_name].set_coordinates(temp_x, temp_y)
-
-            nodes_format += add_inform_node(all_nodes[node_name])
+        not_these.append(max_node.numb)
+        if len(max_node.all_adj_vertices) == 0:
+            nodes_format += do_one_iteration(max_node, radius, curr_angle, about_node)
+            if max_node.is_start_node:
+                nodes_format += draw_start_node(max_node, radius)
             curr_angle += delta_angle
-            if math.fabs(curr_angle - 180) < 0.001:
+        for j in range(len(max_node.all_adj_vertices)):
+            if j == len(max_node.all_adj_vertices) // 2:
+                nodes_format += do_one_iteration(max_node, radius, curr_angle, about_node)
+                if max_node.is_start_node:
+                    nodes_format += draw_start_node(max_node, radius)
                 curr_angle += delta_angle
-            not_these_nodes.append(node_name)
+            temp_node = all_nodes[max_node.all_adj_vertices[j]]
+            if temp_node.numb not in not_these:
+                nodes_format += do_one_iteration(temp_node, radius, curr_angle, about_node)
+                if temp_node.is_start_node:
+                    nodes_format += draw_start_node(temp_node, radius)
+                curr_angle += delta_angle
+                not_these.append(temp_node.numb)
+                i += 1
+        i += 1
     return nodes_format
 
 
 def draw_nodes(nodes):
-    nodes_format = ""
-    not_these_nodes = []
+    centre = Node("centre")
+    centre.set_coordinates(0, 0)
+    for node in nodes:
+        centre.all_adj_vertices.append(node)
 
-    max_node = get_max_node(nodes, not_these_nodes)
-    max_node.set_coordinates(-2, 0)
-    not_these_nodes.append(max_node.numb)
-    adj_nodes_count = len(max_node.all_adj_vertices)
-
-    nodes_format += add_inform_node(max_node)
-
-    next_node = get_max_node(nodes, not_these_nodes)
-    next_node.set_coordinates(2, 0)
-    name_next_node = next_node.numb
-    not_these_nodes.append(next_node.numb)
-    if name_next_node in max_node.all_adj_vertices:
-        adj_nodes_count -= 1
-
-    nodes_format += add_inform_node(next_node)
-
-    curr_angle = 720.0 / (adj_nodes_count + 1)
-    nodes_format += add_adj_nodes(curr_angle, nodes, max_node, not_these_nodes)
-
-    curr_angle = 360.0 / (adj_nodes_count + 1)
-    nodes_format += add_adj_nodes(curr_angle, nodes, next_node, not_these_nodes)
+    curr_angle = 0
+    nodes_format = add_adj_nodes(curr_angle, nodes, centre)
 
     return nodes_format
 
@@ -154,7 +198,7 @@ def draw_nodes(nodes):
 def draw_loop(name_node, temp_char, nodes):
     x = nodes[name_node].x
     y = nodes[name_node].y
-    if math.fabs(x) == 2:
+    if math.fabs(x) == 0:
         if y >= 0:
             direction = "above"
         else:
@@ -164,19 +208,34 @@ def draw_loop(name_node, temp_char, nodes):
     else:
         direction = "left"
 
-    return "\\draw[->, -latex][loop " + direction + "] (" + name_node + ") to node[inner sep=1pt]{" + chose_name(
+    return "\\draw[->, -latex][loop " + direction + "] (" + name_node + ") to node[inner sep=0.2pt]{" + chose_name(
         temp_char) + "} (" + name_node + ");\n"
 
 
 def add_edge_inf(node_from, node_to, letter):
     node_name_from = node_from.numb
     node_name_to = node_to.numb
-    if node_name_from in node_to.all_adj_vertices and node_name_to in node_from.all_adj_vertices and node_name_from > node_name_to:
+    # if node_name_from in node_to.adj_vertices.keys() and node_name_to in node_from.adj_vertices.keys():
+    if math.fabs(node_from.x - node_to.x) < 0.001:
+        print(node_from.numb + " " + node_to.numb)
+        direction = "right"
+        if node_from.y > node_to.y:
+            direction = "left"
         return "\draw [->,-latex] (" + node_name_from + \
-               ") to[bend left] node[inner sep=1pt] {" + letter + "} (" + node_name_to + ");"
+               ") to[bend left=15, " + direction + "] node[inner sep=1.3pt] {" + letter + "} (" + node_name_to + ");\n"
+    if node_from.x < node_to.x and (node_to.y > 0 or node_from.y > 0):
+        size = "15"
     else:
-        return "\\draw[->, -latex] (" + node_name_from + ") --node[inner sep=1pt,swap]{" + letter + "} (" +\
-               node_name_to + ");\n"
+        size = "-15"
+    direction = 'below'
+    if node_name_from in node_to.adj_vertices.keys() and node_name_to in node_from.adj_vertices.keys():
+        direction = "above"
+        size = "15"
+    return "\draw [->,-latex] (" + node_name_from + \
+           ") to[bend left=" + size + ", " + direction + "] node[inner sep=2.5pt] {" + letter + "} (" + node_name_to + ");\n"
+    # else:
+    #     return "\\draw[->, -latex] (" + node_from.numb + ") --node[inner sep=0.2pt,swap]{" + letter + "} (" +\
+    #                node_to.numb + ");\n"
 
 
 def draw_edges(nodes):
