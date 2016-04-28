@@ -13,6 +13,18 @@ def move_data(input, output_filename):
 
 
 class Tests(unittest.TestCase):
+    def test13(self):
+        input = "6\n" \
+                "1 2 a 3 c 4 s\n" \
+                "2 3 a 5 n\n" \
+                "3 6 d\n" \
+                "4 5 t 6 y\n" \
+                "5 6 a\n" \
+                "6\n" \
+                "1\n" \
+                "1"
+        move_data(input, "tests\out13.tex")
+
     def test1(self):
         input = "4\n" \
                 "0 1 a 2 b 0 a\n" \
@@ -104,17 +116,60 @@ class Tests(unittest.TestCase):
 
     def test9(self):
         input = "8\n" \
-                "0 0 a 1 b 2 c 3 d\n" \
-                "1 1 v\n" \
+                "0 0 a 1 b 2 c\n" \
+                "1 1 v 3 e\n" \
                 "2 2 n 3 c\n" \
                 "3 3 m 7 b\n" \
-                "4 4 a 5 b 6 c 7 d\n" \
-                "5 5 h\n" \
-                "6 6 k\n" \
+                "4 4 a 6 c 7 d\n" \
+                "5 5 h 7 t\n" \
+                "6 6 k 5 y\n" \
                 "7 7 l\n" \
                 "0 1 2 3 4 5 6 7\n" \
                 "0 1 2 3 4 5 6 7"
         move_data(input, "tests\out9.tex")
+
+    # def test10(self):
+    #     input = "8\n" \
+    #             "0 1 a 2 a\n" \
+    #             "1 3 b\n" \
+    #             "2 3 n\n" \
+    #             "3 4 \n" \
+    #             "4 5 h 6 j\n" \
+    #             "5 7 \n" \
+    #             "6 7 j\n" \
+    #             "7\n" \
+    #             "0\n" \
+    #             "7"
+    #     move_data(input, 'tests\out10.tex')
+
+    def test11(self):
+        input = "7\n" \
+                "0 1 a 2 b 3 c\n" \
+                "1 2 a\n" \
+                "2 3 v\n" \
+                "3 4 a\n" \
+                "4 5 a 6 b\n" \
+                "5 6 s\n" \
+                "6\n" \
+                "0\n" \
+                "1"
+        move_data(input, "tests\out11.tex")
+
+    def test12(self):
+        input = "9\n" \
+                "1 2 a 3 c 5 s\n" \
+                "2 3 a 4 n\n" \
+                "3 6 d\n" \
+                "4 5 t 6 y 9 e\n" \
+                "5 6 a 7 n\n" \
+                "6 8 a\n" \
+                "7 8 u 9 o 1 a\n" \
+                "8 9 f 2 a\n" \
+                "9 3 d\n" \
+                "1\n" \
+                "1"
+        move_data(input, "tests\out12.tex")
+
 
 
 if __name__ == "__main__":

@@ -33,7 +33,7 @@ def read_data():
         for i in range(nodes_count):
             temp_file_line = f.readline().strip().split()
             if len(temp_file_line) % 2 == 0:
-                print('Incorrect data in file "in1.txt"\n'
+                print('Incorrect data in file "in.txt"\n'
                       'in line {0}'.format(str(i + 1)))
                 sys.exit(1)
             temp_node = temp_file_line[0]
