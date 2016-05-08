@@ -87,20 +87,20 @@ def get_start_coord(node, radius):
 
 def draw_start_node(node, radius):
     start_x, start_y, napr = get_start_coord(node, radius)
-    node_format = "\\node (start) at (" + str(start_x) + "," + str(start_y) \
+    node_format = "     \\node (start) at (" + str(start_x) + "," + str(start_y) \
                   + "){};\n"
-    node_format += "\\draw[->, -latex] (start) --node[inner sep=0pt, swap] {}(" + node.numb + ");\n"
+    node_format += "    \\draw[->, -latex] (start) --node[inner sep=0pt, swap] {}(" + node.numb + ");\n"
     return node_format
 
 
 def draw_finish_node(name_node, x_coord, y_coord):
-    return "\\node [circle, accepting, draw] (" + name_node + ") at (" + str(x_coord) + "," + str(
+    return "    \\node [circle, accepting, draw] (" + name_node + ") at (" + str(x_coord) + "," + str(
         y_coord) + ") [] {" + chose_name(name_node) + "};\n"
 
 
 def chose_name(name):
-    if name == "\\varepsilon":
-        return "$" + name + "$"
+    if name == "e" or name == "E":
+        return "$" + "\\varepsilon" + "$"
     else:
         return name
 
@@ -129,7 +129,7 @@ def add_inform_node(node):
     if node.is_finish_node:
         return draw_finish_node(node.numb, node.x, node.y)
     else:
-        return "\\node[circle, draw] ({node}) at ({x},{y}) ".format(
+        return "    \\node[circle, draw] ({node}) at ({x},{y}) ".format(
             node=node.numb
             , x=node.x
             , y=node.y
@@ -243,7 +243,7 @@ def draw_loop(name_node, temp_char, nodes):
     else:
         direction = "left"
 
-    return "\\draw[->, -latex][loop " + direction + "] (" + name_node + ") to node[inner sep=0.2pt]{" + chose_name(
+    return "    \\draw[->, -latex][loop " + direction + "] (" + name_node + ") to node[inner sep=0.2pt]{" + chose_name(
         temp_char) + "} (" + name_node + ");\n"
 
 
@@ -255,7 +255,7 @@ def add_edge_inf(node_from, node_to, letter):
         direction = "right"
         if node_from.y > node_to.y:
             direction = "left"
-        return "\draw [->,-latex] (" + node_name_from + \
+        return "    \\draw [->,-latex] (" + node_name_from + \
                ") to[bend left=15, " + direction + "] node[inner sep=1.3pt] {" + letter + "} (" + node_name_to + ");\n"
     if node_from.x < node_to.x and (node_to.y > 0 or node_from.y > 0):
         size = "15"
@@ -266,7 +266,7 @@ def add_edge_inf(node_from, node_to, letter):
     if node_name_from in node_to.adj_vertices.keys() and node_name_to in node_from.adj_vertices.keys():
         direction = "above"
         size = "15"
-    return "\draw [->,-latex] (" + node_name_from + \
+    return "    \\draw [->,-latex] (" + node_name_from + \
            ") to[bend left=" + size + ", " + direction + "] node[inner sep=1.3pt] {" + letter + "} (" + node_name_to + ");\n"
 
 
@@ -283,10 +283,11 @@ def draw_edges(nodes):
     return nodes_format
 
 
-def create_tex_file(nodes):
-    with open('out.tex', 'w') as f:
+def create_tex_file(nodes, file_name):
+    with open(file_name , 'w') as f:
         f.write(
-            "\\documentclass[tikz]{standalone}\n"
+            "\\documentclass{article}\n"
+            "\\usepackage{tikz}\n"
             "\\usepackage{gastex}\n"
             "\\usetikzlibrary{automata}\n"
             "\\begin{document}\n"
@@ -299,6 +300,6 @@ def create_tex_file(nodes):
         f.write(nodes_format)
 
         f.write(
-            "\\end{tikzpicture}\n"
+            "   \\end{tikzpicture}\n"
             "\\end{document}"
         )

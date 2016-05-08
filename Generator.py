@@ -1,6 +1,11 @@
+# как закрыть окно после сохранения
 import sys
+import GraphicForm
 
 import Creator_tex_file as ctf
+
+
+OUTPUT_FILE = ""
 
 
 def add_node(node_name, nodes):
@@ -16,6 +21,7 @@ def add_node(node_name, nodes):
 def read_data():
     """
     читает из файла in.txt данные:
+        куда писать
         число вершин
         текущая_вершина вершина буква вершина буква ... вершина буква
         ...
@@ -29,6 +35,10 @@ def read_data():
     # global nodes_count
     nodes = {}
     with open("in.txt", "r") as f:
+        global OUTPUT_FILE
+        OUTPUT_FILE = f.readline().strip()
+        if OUTPUT_FILE == "":
+            OUTPUT_FILE = "out.tex"
         nodes_count = int(f.readline())
         for i in range(nodes_count):
             temp_file_line = f.readline().strip().split()
@@ -42,11 +52,14 @@ def read_data():
             for j in range(len(temp_file_line) // 2):
                 nodes[temp_node].add_adj_node(temp_file_line[2*j], temp_file_line[2*j + 1])
         start_nodes = f.readline().strip().split(" ")
+
         for node in start_nodes:
-            nodes[node].set_start_node()
+            if len(node) > 0:
+                nodes[node].set_start_node()
         end_nodes = f.readline().strip().split()
         for j in range(len(end_nodes)):
-            nodes[end_nodes[j]].set_finish_node()
+            if len(end_nodes[j]) > 0:
+                nodes[end_nodes[j]].set_finish_node()
     if len(nodes) != 0:
         for node_name in nodes.keys():
             node = nodes[node_name]
@@ -61,8 +74,10 @@ def read_data():
 
 
 def main_f():
+    GraphicForm.write_from_forms()
+    print("end")
     nodes = read_data()
-    ctf.create_tex_file(nodes)
+    ctf.create_tex_file(nodes, OUTPUT_FILE)
 
 
 if __name__ == "__main__":

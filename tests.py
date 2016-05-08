@@ -1,11 +1,11 @@
 import unittest
-import Main
+import Generator
 
 
 def move_data(input, output_filename):
     with open("in.txt", "w") as f:
         f.write(input)
-    Main.main_f()
+    Generator.main_f()
     with open("out.tex", 'r') as f:
         output = f.read()
     with open(output_filename, "w") as f:
